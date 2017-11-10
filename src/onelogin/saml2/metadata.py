@@ -173,13 +173,16 @@ class OneLogin_Saml2_Metadata(object):
                 contacts_info.append(contact)
             str_contacts = '\n'.join(contacts_info) + '\n'
 
+        if not isinstance(sp['NameIDFormat'], list):
+            sp['NameIDFormat'] = [sp['NameIDFormat']]
+
         metadata = u"""<?xml version="1.0"?>
 <md:EntityDescriptor xmlns:md="urn:oasis:names:tc:SAML:2.0:metadata"
                      %(valid)s
                      %(cache)s
                      entityID="%(entity_id)s">
     <md:SPSSODescriptor AuthnRequestsSigned="%(authnsign)s" WantAssertionsSigned="%(wsign)s" protocolSupportEnumeration="urn:oasis:names:tc:SAML:2.0:protocol">
-%(sls)s        <md:NameIDFormat>%(name_id_format)s</md:NameIDFormat>
+%(sls)s%(name_id_format_string)s
         <md:AssertionConsumerService Binding="%(binding)s"
                                      Location="%(location)s"
                                      index="1" />
@@ -191,7 +194,7 @@ class OneLogin_Saml2_Metadata(object):
                 'entity_id': sp['entityId'],
                 'authnsign': str_authnsign,
                 'wsign': str_wsign,
-                'name_id_format': sp['NameIDFormat'],
+                'name_id_format_string': ('        <md:NameIDFormat>{}</md:NameIDFormat>\n'*len(sp['NameIDFormat'])).format(*sp['NameIDFormat']),
                 'binding': sp['assertionConsumerService']['binding'],
                 'location': sp['assertionConsumerService']['url'],
                 'sls': sls,
